@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Sample Webpage</title>
+</head>
+<body>
+
+    <!-- Main Heading -->
+    <h1>Welcome to My Website</h1>
+    
+    <!-- Subheading -->
+    <h2>About This Page</h2>
+    
+    <!-- Paragraph with bold and italic text -->
+    <p>This is a sample paragraph demonstrating basic <strong>HTML structure</strong>. You can use HTML to format text, embed media, and link to other pages.</p>
+
+    <!-- Hyperlink -->
+    <p>Learn more by visiting the official <a href="https://developer.mozilla.org" target="_blank">MDN Web Docs</a>.</p>
+
+    <!-- Image Placeholder -->
+    <h2>Sample Image</h2>
+    <img src="https://placeholder.com" alt="Placeholder image description" width="300" height="150">
+
+    <!-- Unordered List -->
+    <h2>My Favorite Core Technologies</h2>
+    <ul>
+        <li>HTML5 (Structure)</li>
+        <li>CSS3 (Presentation)</li>
+        <li>JavaScript (Behavior)</li>
+    </ul>
+
+</body>
+</html>
+
