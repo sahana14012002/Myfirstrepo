@@ -1,18 +1,254 @@
--- Select all columns from a table
-SELECT * FROM employees;
+from flask import Flask, render_template, request, jsonify
+import random
+import string
 
--- Select specific columns and filter by condition (WHERE)
-SELECT first_name, last_name, salary 
-FROM employees 
-WHERE salary > 70000;
+app = Flask(__name__)
 
--- Combine conditions (AND, OR, NOT) and sort results (ORDER BY)
-SELECT first_name, last_name, salary 
-FROM employees 
-WHERE (dept_id = 1 OR salary >= 80000) AND hire_date >= '2022-01-01'
-ORDER BY salary DESC;
+# -----------------------------
+# Movie Data
+# -----------------------------
 
--- Find text matching a pattern (LIKE) and specific sets (IN)
-SELECT first_name, email 
-FROM employees 
-WHERE last_name LIKE 'S%' OR dept_id IN (1, 2);
+movies = [
+    {
+        "id": 1,
+        "title": "Midnight Chase",
+        "genre": "Action",
+        "rating": 8.7,
+        "price": 250
+    },
+    {
+        "id": 2,
+        "title": "Lost in Time",
+        "genre": "Sci-Fi",
+        "rating": 9.1,
+        "price": 280
+    },
+    {
+        "id": 3,
+        "title": "The Last Letter",
+        "genre": "Drama",
+        "rating": 8.4,
+        "price": 220
+    },
+    {
+        "id": 4,
+        "title": "Laugh Out Loud",
+        "genre": "Comedy",
+        "rating": 8.2,
+        "price": 200
+    },
+    {
+        "id": 5,
+        "title": "Dark Horizon",
+        "genre": "Thriller",
+        "rating": 8.9,
+        "price": 260
+    }
+]
+
+# Store bookings temporarily
+bookings = []
+
+
+# -----------------------------
+# Generate Booking ID
+# -----------------------------
+
+def generate_booking_id():
+
+    random_number = ''.join(
+        random.choices(string.digits, k=5)
+    )
+
+    return f"CB-2026-{random_number}"
+
+
+# -----------------------------
+# Home Page
+# -----------------------------
+
+@app.route("/")
+def home():
+
+    return render_template(
+        "index.html",
+        movies=movies
+    )
+
+
+# -----------------------------
+# Get All Movies
+# -----------------------------
+
+@app.route("/api/movies")
+def get_movies():
+
+    return jsonify(movies)
+
+
+# -----------------------------
+# Search Movies
+# -----------------------------
+
+@app.route("/api/movies/search")
+def search_movies():
+
+    search = request.args.get(
+        "query",
+        ""
+    ).lower()
+
+    result = [
+        movie for movie in movies
+        if search in movie["title"].lower()
+    ]
+
+    return jsonify(result)
+
+
+# -----------------------------
+# Get Movie By ID
+# -----------------------------
+
+@app.route("/api/movies/<int:movie_id>")
+def get_movie(movie_id):
+
+    movie = next(
+        (
+            movie for movie in movies
+            if movie["id"] == movie_id
+        ),
+        None
+    )
+
+    if movie is None:
+
+        return jsonify({
+            "error": "Movie not found"
+        }), 404
+
+    return jsonify(movie)
+
+
+# -----------------------------
+# Book Ticket
+# -----------------------------
+
+@app.route("/api/book", methods=["POST"])
+def book_ticket():
+
+    data = request.get_json()
+
+    movie_id = data.get("movie_id")
+    date = data.get("date")
+    showtime = data.get("showtime")
+    seats = data.get("seats")
+
+    # Validation
+
+    if not movie_id:
+        return jsonify({
+            "error": "Movie is required"
+        }), 400
+
+    if not date:
+        return jsonify({
+            "error": "Date is required"
+        }), 400
+
+    if not showtime:
+        return jsonify({
+            "error": "Showtime is required"
+        }), 400
+
+    if not seats:
+        return jsonify({
+            "error": "Please select seats"
+        }), 400
+
+    # Find movie
+
+    movie = next(
+        (
+            movie for movie in movies
+            if movie["id"] == movie_id
+        ),
+        None
+    )
+
+    if movie is None:
+
+        return jsonify({
+            "error": "Movie not found"
+        }), 404
+
+    # Calculate price
+
+    total_price = (
+        len(seats) * movie["price"]
+    )
+
+    # Create booking
+
+    booking = {
+
+        "booking_id":
+            generate_booking_id(),
+
+        "movie":
+            movie["title"],
+
+        "date":
+            date,
+
+        "showtime":
+            showtime,
+
+        "seats":
+            seats,
+
+        "number_of_seats":
+            len(seats),
+
+        "price_per_ticket":
+            movie["price"],
+
+        "total_price":
+            total_price
+    }
+
+    bookings.append(booking)
+
+    return jsonify({
+
+        "success": True,
+
+        "message":
+            "Booking successful",
+
+        "booking":
+            booking
+    })
+
+
+# -----------------------------
+# View All Bookings
+# -----------------------------
+
+@app.route("/api/bookings")
+def get_bookings():
+
+    return jsonify(bookings)
+
+
+# -----------------------------
+# Run Application
+# -----------------------------
+
+if __name__ == "__main__":
+
+    app.run(
+        debug=True,
+        host="127.0.0.1",
+        port=5000
+    )
